@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureGuard Test Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        .submit-btn {
+            background: #f44336;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submit-btn:hover {
+            background: #d32f2f;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .test-data {
+            background: #e8f5e8;
+            border: 1px solid #4CAF50;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .test-data h3 {
+            margin-top: 0;
+            color: #2e7d2e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ SecureGuard Test Form</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Test Purpose:</strong> This form is designed to test SecureGuard's data leak prevention. 
+            When you try to submit this form, SecureGuard should detect the sensitive data and show a warning popup.
+        </div>
+
+        <div class="test-data">
+            <h3>Test Data to Use:</h3>
+            <p><strong>Email:</strong> test@example.com</p>
+            <p><strong>SSN:</strong> 123-45-6789</p>
+            <p><strong>Credit Card:</strong> 4111-1111-1111-1111</p>
+            <p><strong>Password:</strong> mypassword123</p>
+        </div>
+
+        <form id="testForm" action="https://httpbin.org/post" method="POST">
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="ssn">Social Security Number:</label>
+                <input type="text" id="ssn" name="ssn" placeholder="XXX-XX-XXXX">
+            </div>
+
+            <div class="form-group">
+                <label for="creditcard">Credit Card Number:</label>
+                <input type="text" id="creditcard" name="creditcard" placeholder="XXXX-XXXX-XXXX-XXXX">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" placeholder="Enter password">
+            </div>
+
+            <div class="form-group">
+                <label for="apikey">API Key:</label>
+                <input type="text" id="apikey" name="apikey" placeholder="api_key_example_123">
+            </div>
+
+            <button type="submit" class="submit-btn">
+                🚨 Submit Test Data (Should Trigger SecureGuard Warning)
+            </button>
+        </form>
+
+        <div style="margin-top: 30px; padding: 15px; background: #f0f8ff; border-radius: 4px;">
+            <h3>📋 What Should Happen:</h3>
+            <ol>
+                <li><strong>Fill the form</strong> with the test data provided above</li>
+                <li><strong>Click Submit</strong> - SecureGuard should detect sensitive data</li>
+                <li><strong>Warning popup</strong> should appear asking if you want to block or continue</li>
+                <li><strong>Check extension</strong> - Click the SecureGuard icon to see alerts</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Add some JavaScript to help with testing
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            console.log('Form submission attempted');
+            // Don't prevent default here - let SecureGuard handle it
+        });
+
+        // Auto-fill test data button
+        function fillTestData() {
+            document.getElementById('email').value = 'test@example.com';
+            document.getElementById('ssn').value = '123-45-6789';
+            document.getElementById('creditcard').value = '4111-1111-1111-1111';
+            document.getElementById('password').value = 'mypassword123';
+            document.getElementById('apikey').value = 'api_key_example_123';
+        }
+
+        // Add a button to auto-fill
+        const fillButton = document.createElement('button');
+        fillButton.textContent = '🔄 Auto-Fill Test Data';
+        fillButton.type = 'button';
+        fillButton.onclick = fillTestData;
+        fillButton.style.cssText = `
+            background: #2196F3;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            width: 100%;
+        `;
+        
+        document.getElementById('testForm').insertBefore(fillButton, document.getElementById('testForm').firstElementChild);
+    </script>
+</body>
+</html>

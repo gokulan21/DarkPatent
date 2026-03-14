@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SecureGuard - Data Leak Prevention</title>
+  <style>
+    html, body {
+      width: 600px;
+      min-height: 600px;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    header h1 {
+      margin: 0;
+      font-weight: bold;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    header h2 {
+      margin: 0;
+      font-weight: normal;
+      font-size: 16px;
+      opacity: 0.8;
+    }
+    .status-card {
+      margin: 20px;
+      padding: 15px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .status-card .label {
+      font-weight: 600;
+      font-size: 18px;
+    }
+    .status-card .value {
+      font-weight: bold;
+      font-size: 24px;
+      color: #76ff03;
+    }
+    nav {
+      display: flex;
+      margin: 0 20px 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.15);
+    }
+    nav button {
+      flex: 1;
+      padding: 14px 0;
+      background: none;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    nav button.active, nav button:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    section {
+      display: none;
+      margin: 0 20px 20px;
+      max-height: none;
+      overflow: visible;
+    }
+    section.active {
+      display: block;
+    }
+    #settings {
+      padding-bottom: 16px;
+    }
+    .alerts-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 10px;
+      background: rgba(244, 67, 54, 0.3);
+      border-radius: 12px;
+      color: white;
+    }
+    .alert-item {
+      background: rgba(244, 67, 54, 0.6);
+      margin: 8px 0;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: default;
+      user-select: text;
+    }
+    .alert-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .btn {
+      background: rgba(255, 255, 255, 0.3);
+      border: none;
+      border-radius: 12px;
+      padding: 15px 0;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      text-align: center;
+      user-select: none;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.6);
+    }
+    input[type="email"] {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      margin-bottom: 10px;
+      color: black;
+      box-sizing: border-box;
+    }
+    .result {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 12px;
+      border-radius: 12px;
+      margin-top: 12px;
+      min-height: 48px;
+      font-size: 16px;
+    }
+    .toggle-switch {
+      width: 60px;
+      height: 30px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 15px;
+      cursor: pointer;
+      position: relative;
+      display: inline-block;
+      vertical-align: middle;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    .toggle-switch.active {
+      background: #76ff03;
+    }
+    .toggle-slider {
+      width: 26px;
+      height: 26px;
+      background: white;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      transition: left 0.3s ease;
+    }
+    .toggle-switch.active .toggle-slider {
+      left: 32px;
+    }
+    .feature-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 12px 0;
+      font-weight: 600;
+      font-size: 16px;
+    }
+    select {
+      width: 100%;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: white;
+      color: black;
+      font-size: 16px;
+      font-weight: 600;
+      padding-left: 16px;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+    select:focus {
+      outline: none;
+      border-color: #76ff03;
+      box-shadow: 0 0 0 2px rgba(118, 255, 3, 0.25);
+    }
+    select option {
+      background: white;
+      color: #000000;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🛡️ SecureGuard</h1>
+  <p>Data Leak Prevention</p>
+</header>
+
+<div class="status-card">
+  <div class="label">Protection Status</div>
+  <div id="protectionStatus" class="value">ACTIVE</div>
+</div>
+
+<nav>
+  <button data-tab="dashboard" class="tab active">Dashboard</button>
+  <button data-tab="alerts" class="tab">Alerts</button>
+  <button data-tab="breach" class="tab">Breach Check</button>
+  <button data-tab="settings" class="tab">Settings</button>
+</nav>
+
+<section id="dashboard" class="tab-content active">
+  <div class="status-card">
+    <div class="label">Active Alerts</div>
+    <div id="alertCount" class="value">0</div>
+  </div>
+  <div class="status-card">
+    <div class="label">Sites Scanned</div>
+    <div id="sitesScanned" class="value">0</div>
+  </div>
+
+  <div class="buttons-grid">
+    <div id="scanPageBtn" class="btn">🔍 Scan Page</div>
+    <div id="clearAlertsBtn" class="btn">� Clear</div>
+    <div id="exportDataBtn" class="btn">📊 Export Data</div>
+    <div id="settingsBtn" class="btn">⚙️ Settings</div>
+  </div>
+
+  <div id="scanStatus" class="result" style="margin-top: 16px;">Run Scan Page to analyze this website.</div>
+</section>
+
+<section id="alerts" class="tab-content">
+  <div id="alertsList" class="alerts-list">
+    <p style="text-align:center; opacity:0.6; margin-top: 40px;">No alerts to display.</p>
+  </div>
+</section>
+
+<section id="breach" class="tab-content">
+  <input id="breachEmail" type="email" placeholder="Enter email to check breaches" />
+  <div id="breachCheckBtn" class="btn" style="width:100%;">Check</div>
+  <div id="breachResult" class="result"></div>
+</section>
+
+<section id="settings" class="tab-content">
+  <div class="feature-row">
+    <label for="toggleRealTimeScanning">Real-time Scanning</label>
+    <div id="toggleRealTimeScanning" class="toggle-switch active" data-setting="realTimeScanning">
+      <div class="toggle-slider"></div>
+    </div>
+  </div>
+  <div class="feature-row">
+    <label for="toggleDarkWeb">Dark Web Monitoring</label>
+    <div id="toggleDarkWeb" class="toggle-switch active" data-setting="darkWebScanning">
+      <div class="toggle-slider"></div>
+    </div>
+  </div>
+  <div class="feature-row">
+    <label for="toggleAutoBlock">Auto-block Suspicious</label>
+    <div id="toggleAutoBlock" class="toggle-switch" data-setting="autoBlock">
+      <div class="toggle-slider"></div>
+    </div>
+  </div>
+  <div class="feature-row">
+    <label for="toggleNotifications">Notifications</label>
+    <div id="toggleNotifications" class="toggle-switch active" data-setting="notifications">
+      <div class="toggle-slider"></div>
+    </div>
+  </div>
+  <label for="alertLevel" style="margin-top: 12px;">Alert Sensitivity</label>
+  <select id="alertLevel">
+    <option value="low">Low - Critical Only</option>
+    <option value="medium" selected>Medium - Balanced</option>
+    <option value="high">High - All Alerts</option>
+  </select>
+
+  <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 12px;">
+    <strong style="display: block; margin-bottom: 10px;">🔐 Whitelisted Sites</strong>
+    <div id="whitelistContainer" style="max-height: 150px; overflow-y: auto; margin-bottom: 10px;">
+      <p style="opacity: 0.6; text-align: center; margin: 10px 0;">No whitelisted sites</p>
+    </div>
+    <div id="whitelistCurrentBtn" class="btn" style="width:100%; margin-bottom: 8px;">➕ Whitelist Current Site</div>
+    <p style="font-size: 12px; opacity: 0.7; margin-top: 8px;">Whitelisted sites will not generate alerts.</p>
+  </div>
+
+  <div id="resetSettingsBtn" class="btn" style="width:100%; margin-top: 12px;">Reset Defaults</div>
+</section>
+
+<script src="popup.js"></script>
+
+</body>
+</html>
