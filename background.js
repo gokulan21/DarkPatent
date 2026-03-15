@@ -446,11 +446,7 @@ class SecurityEngine {
     // All alerts stored silently - no popup notifications
     alert.silent = true;
 
-    // Cap at 100 alerts — drop oldest
-    if (this.alertQueue.length >= 100) {
-      this.alertQueue.shift();
-    }
-
+    // Store unlimited alerts — no cap on alert queue
     this.alertQueue.push(alert);
     await chrome.storage.local.set({ alerts: this.alertQueue });
 
