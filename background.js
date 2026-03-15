@@ -26,6 +26,8 @@ class SecurityEngine {
     // Rate-limit cookie leak alerts: track last alert time per tab to avoid spam
     this.cookieAlertCooldown = new Map(); // tabId -> lastAlertTimestamp
     this.COOKIE_ALERT_INTERVAL_MS = 60000; // max one cookie alert per tab per minute
+    this.unauthorizedSiteCooldown = new Map(); // hostname -> lastAlertTimestamp
+    this.UNAUTHORIZED_SITE_ALERT_INTERVAL_MS = 300000; // max one unauthorized-site alert per host every 5 min
 
     this.init();
   }
@@ -146,6 +148,11 @@ class SecurityEngine {
               .then(() => sendResponse({ success: true }))
               .catch(() => sendResponse({ success: false }));
             return true;
+          case 'CHECK_SITE_AUTHORIZATION':
+            this.checkSiteAuthorization(message.url || sender?.tab?.url, sender?.tab?.id)
+              .then(result => sendResponse(result || { authorized: true }))
+              .catch(e => sendResponse({ authorized: true, error: e.message }));
+            return true;
           default:
             sendResponse({ success: false, message: 'Unknown message type' });
         }
@@ -189,6 +196,46 @@ class SecurityEngine {
       timestamp: Date.now(),
       tabId: sender?.tab?.id
     });
+  }
+
+  async checkSiteAuthorization(url, tabId) {
+    try {
+      if (!url) return { authorized: true };
+
+      const parsed = new URL(url);
+      const hostname = parsed.hostname;
+      const authorized = this.whitelistedSites.has(hostname);
+
+      // Authorized sites are allowed normally without any alert noise.
+      if (authorized) {
+        return { authorized: true, hostname };
+      }
+
+      // Unauthorized site detected: log it silently with host-level cooldown.
+      const now = Date.now();
+      const lastLogged = this.unauthorizedSiteCooldown.get(hostname) || 0;
+      if (now - lastLogged >= this.UNAUTHORIZED_SITE_ALERT_INTERVAL_MS) {
+        this.unauthorizedSiteCooldown.set(hostname, now);
+        await this.createAlert({
+          type: 'unauthorized_site',
+          severity: 'medium',
+          url,
+          initiator: null,
+          data: [{ type: 'unauthorized_site' }],
+          isThirdParty: false,
+          blocked: false,
+          silent: true,
+          timestamp: now,
+          tabId,
+          message: `Unauthorized site detected: ${hostname}`
+        });
+      }
+
+      return { authorized: false, hostname };
+    } catch (_) {
+      // If URL parsing fails, do not block normal user flow.
+      return { authorized: true };
+    }
   }
 
   async analyzeRequest(details) {

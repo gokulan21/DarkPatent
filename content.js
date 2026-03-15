@@ -65,6 +65,7 @@ class ContentScriptGuard {
       const settings = result.settings || {};
       // Only set up monitoring if real-time scanning is enabled
       if (settings.realTimeScanning !== false) {
+        this.reportSiteAuthorization();
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', () => this.setupMonitoring());
         } else {
@@ -99,6 +100,17 @@ class ContentScriptGuard {
           break;
       }
     });
+  }
+
+  reportSiteAuthorization() {
+    // Only web pages are eligible for authorization checks.
+    if (!window.location.href.startsWith('http://') && !window.location.href.startsWith('https://')) return;
+    try {
+      chrome.runtime.sendMessage({
+        type: 'CHECK_SITE_AUTHORIZATION',
+        url: window.location.href
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   async logDetectionEvent(eventType, sensitiveData, extra = {}) {
