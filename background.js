@@ -490,8 +490,15 @@ class SecurityEngine {
   async createAlert(alert) {
     alert.id = crypto.randomUUID();
 
-    // All alerts stored silently - no popup notifications
-    alert.silent = true;
+    // Send popup notifications only for very serious alerts.
+    // Condition: notifications enabled + caller explicitly requested popup + high/critical severity.
+    const notificationsEnabled = this.userSettings.notifications === true;
+    const requestedPopup = alert.silent === false;
+    const severeAttack = alert.severity === 'high' || alert.severity === 'critical';
+    const shouldNotify = notificationsEnabled && requestedPopup && severeAttack;
+
+    // All non-severe or non-requested alerts stay silent in the log.
+    alert.silent = !shouldNotify;
 
     // Store unlimited alerts — no cap on alert queue
     this.alertQueue.push(alert);
@@ -500,6 +507,20 @@ class SecurityEngine {
     // Update badge with current alert count
     chrome.action.setBadgeText({ text: this.alertQueue.length.toString() });
     chrome.action.setBadgeBackgroundColor({ color: '#ff4444' });
+
+    if (shouldNotify) {
+      try {
+        chrome.notifications.create({
+          type: 'basic',
+          iconUrl: 'icons/icon128.png',
+          title: 'SecureGuard Critical Alert',
+          message: this.formatAlertMessage(alert),
+          priority: 2
+        });
+      } catch (e) {
+        console.error('Error creating notification:', e);
+      }
+    }
   }
 
   formatAlertMessage(alert) {
