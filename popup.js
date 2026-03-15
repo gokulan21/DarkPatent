@@ -490,12 +490,12 @@ class PopupController {
   async checkBreaches() {
     const emailInput = document.getElementById('breachEmail');
     if (!emailInput) {
-      alert('Internal error: email input not found.');
+      console.log('Internal error: email input not found.');
       return;
     }
     const email = emailInput.value.trim();
     if (!email || !email.includes('@')) {
-      alert('Please enter a valid email address.');
+      console.log('Please enter a valid email address.');
       return;
     }
     const breachResult = document.getElementById('breachResult');
@@ -518,8 +518,8 @@ class PopupController {
         breachResult.style.color = '#4CAF50';
       }
     } catch (e) {
-      alert('Error checking breach status.');
       console.error('Check breach error:', e);
+      console.log('Error checking breach status.');
     }
   }
 
@@ -553,7 +553,7 @@ class PopupController {
 
   async whitelistCurrentSite() {
     if (!this.currentTabUrl || !this.currentTabHostname) {
-      alert('Could not determine current site. Make sure you are on an http/https page.');
+      console.log('Could not determine current site. Make sure you are on an http/https page.');
       return;
     }
 
@@ -564,15 +564,15 @@ class PopupController {
       });
 
       if (result && result.success) {
-        alert(`✓ ${this.currentTabHostname} has been whitelisted. No alerts will be shown for this site.`);
+        console.log(`✓ ${this.currentTabHostname} has been whitelisted. No alerts will be shown for this site.`);
         await this.loadData();
         this.updateUI();
       } else if (result && result.message) {
-        alert('Error: ' + result.message);
+        console.log('Error: ' + result.message);
       }
     } catch (e) {
       console.error('Error whitelisting site:', e);
-      alert('Could not whitelist site. Please try again.');
+      console.log('Could not whitelist site. Please try again.');
     }
   }
 

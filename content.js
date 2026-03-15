@@ -368,61 +368,9 @@ class ContentScriptGuard {
   }
 
   createWarningModal(scanResult, formAction, resolve) {
-    document.querySelectorAll('.secureguard-modal').forEach(m => m.remove());
-    const modal = document.createElement('div');
-    modal.className = 'secureguard-modal';
-    modal.style.cssText = `
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 100000;
-      font-family: Arial, sans-serif;
-    `;
-
-    const content = document.createElement('div');
-    content.style.cssText = `
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      max-width: 420px;
-      width: 92vw;
-      max-height: 80vh;
-      overflow-y: auto;
-      position: relative;
-      color: #222;
-    `;
-
-    // Show only types, never raw values
-    const dataList = scanResult.sensitiveData?.map(d => `<li>${d.type.replace(/_/g, ' ')}</li>`).join('') || '<li>Detected sensitive data.</li>';
-    const recList = scanResult.recommendations?.map(r => `<li>${r}</li>`).join('') || '<li>Please review before proceeding.</li>';
-
-    let destHost = formAction;
-    try { destHost = new URL(formAction).hostname; } catch (_) {}
-
-    content.innerHTML = `
-      <h2 style="color:#d32f2f; margin:0 0 12px;">⚠️ Potential Data Leak Detected</h2>
-      <p style="margin:0 0 8px;font-size:13px;color:#555;">Submitting to: <strong>${destHost}</strong></p>
-      <p style="margin:0 0 6px;font-size:13px;font-weight:600;">Detected sensitive data types:</p>
-      <ul style="margin:0 0 12px;padding-left:18px;font-size:13px;">${dataList}</ul>
-      <p style="margin:0 0 6px;font-size:13px;font-weight:600;">Recommendations:</p>
-      <ul style="margin:0 0 16px;padding-left:18px;font-size:13px;">${recList}</ul>
-      <div style="text-align:right;">
-        <button id="blockBtn" style="background:#d32f2f; color:white; margin-right:10px; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; font-size:14px;">Block Submission</button>
-        <button id="continueBtn" style="background:#4caf50; color:white; padding:10px 20px; border:none; border-radius:4px; cursor:pointer; font-size:14px;">Continue Anyway</button>
-      </div>
-      <button id="closeBtn" style="position:absolute; top:10px; right:10px; background:none; border:none; font-size:24px; cursor:pointer; color:#555;">&times;</button>
-    `;
-
-    content.querySelector('#blockBtn').onclick = () => { modal.remove(); resolve(true); };
-    content.querySelector('#continueBtn').onclick = () => { modal.remove(); resolve(false); };
-    content.querySelector('#closeBtn').onclick = () => { modal.remove(); resolve(true); };
-    modal.onclick = e => { if (e.target === modal) { modal.remove(); resolve(true); } };
-    modal.appendChild(content);
-    return modal;
+    // Silent alerts only - no visual modals displayed to user
+    // All detection data is logged to background and stored silently
+    return null;
   }
 
   async runPageScan() {
