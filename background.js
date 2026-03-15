@@ -443,20 +443,8 @@ class SecurityEngine {
   async createAlert(alert) {
     alert.id = crypto.randomUUID();
 
-    // Determine if this alert should show a notification
-    // Based on settings: notifications enabled and alert is critical
-    let shouldNotify = false;
-    
-    if (this.userSettings.notifications === true) {
-      // Show notification only for critical/hacking alerts
-      if (alert.severity === 'critical' || 
-          (alert.blocked === true && alert.isThirdParty === true)) {
-        shouldNotify = true;
-      }
-    }
-
-    // All other alerts stored silently
-    alert.silent = !shouldNotify;
+    // All alerts stored silently - no popup notifications
+    alert.silent = true;
 
     // Cap at 100 alerts — drop oldest
     if (this.alertQueue.length >= 100) {
@@ -469,22 +457,6 @@ class SecurityEngine {
     // Update badge with current alert count
     chrome.action.setBadgeText({ text: this.alertQueue.length.toString() });
     chrome.action.setBadgeBackgroundColor({ color: '#ff4444' });
-
-    // Show OS notification if alert should be displayed
-    if (shouldNotify) {
-      try {
-        const message = this.formatAlertMessage(alert);
-        chrome.notifications.create({
-          type: 'basic',
-          iconUrl: 'icons/icon128.png',
-          title: '🛡️ Security Alert - SecureGuard',
-          message: message,
-          priority: 2
-        });
-      } catch (e) {
-        console.error('Error creating notification:', e);
-      }
-    }
   }
 
   formatAlertMessage(alert) {
